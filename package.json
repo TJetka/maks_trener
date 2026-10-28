@@ -1,0 +1,14 @@
+{
+  "name": "makstrener",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Local-first Polish mathematical contest training",
+  "scripts": {
+    "start": "node scripts/serve.js",
+    "test": "node --test tests/*.test.js",
+    "test:generators": "node --test tests/generators.test.js",
+    "check": "node scripts/check.js"
+  },
+  "engines": { "node": ">=20" }
+}
