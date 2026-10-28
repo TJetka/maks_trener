@@ -44,6 +44,29 @@ Chrome on macOS, desktop and an actual 360 px wide iframe viewport:
   the Chrome extension's file-upload permission; no extension permissions were
   changed. Import validation and merge behavior are covered by automated tests.
 
+## Difficulty release 1.1.0 — live verification
+
+Verified on GitHub Pages in Chrome on 28 October 2026:
+
+- All ten game cards show Intermediate/Expert controls and matching descriptions;
+  a changed choice survives reload. Rules and active-run badges match the tier.
+- Expert Dzielnik uses 24 cells, three required selections and a 12-second clock.
+  Intermediate Działanie has supplied operators and a six-minute clock; a correct
+  visible-control answer awarded 12 points and advanced the level.
+- A session with one game in each tier retained its original tiers after changing
+  the training preference. Results display both tiers and the correct combined best.
+- Existing five legacy runs remained under Wcześniejsze wyniki; new Expert and
+  Intermediate statistics and card records were separated.
+- Expert target drill generated a three-number expression and graded it correctly.
+  Expert mystery division displayed quotient/remainder fields and awarded eight
+  points for a correct answer.
+- At a 360×800 viewport, page and scroll widths both measured 360 px, and all tier
+  buttons were 44 px high. Desktop and phone screenshots inspected; viewport reset.
+- No browser console errors. Default difficulty restored to Intermediate.
+
+The environment blocked binding a local preview server for this release, so the
+browser checks used the published site after automated tests passed.
+
 ## Release checks that require real devices
 
 Not certified by the automated tests: iPad Safari, Android Chrome, Windows
