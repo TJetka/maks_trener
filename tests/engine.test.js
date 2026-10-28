@@ -55,6 +55,25 @@ test('1,000 mystery profiles validate, generate and explain their scoring',()=>{
   }
   assert.throws(()=>validateParams('sumuj',{size:10000}));assert.throws(()=>validateParams('dzielnik',{min:10,max:11,find:3}));
 });
+test('mystery profiles remain playable across every difficulty boundary',()=>{
+  for(let seed=0;seed<1000;seed++){
+    const v=randomVariant(seed),g=games[v.gameId];
+    for(const level of [7,13,18,20,31,61,90].filter(l=>l<=g.difficulty(1).levels)){
+      const i=g.generate(level,parameters(v.gameId,level,{},v.params),mulberry32(seed+level));
+      assert.ok(g.check(i,v.gameId==='dzielnik'?i.solution[0]:i.solution).correct,`${v.gameId}:${seed}:${level}`);
+      if(v.gameId==='dzialanie')assert.equal(i.operators.length,i.numbers.length-1);
+    }
+  }
+});
+test('first-answer latency includes thinking before the countdown starts',()=>{
+  const {run,advance}=fixture('dzielnik');advance(4200);assert.equal(run.remaining(),15000);
+  run.answer(run.instance.solution[0]);assert.equal(run.firstCorrectMs,4200);assert.equal(run.events[0].responseMs,4200);
+});
+test('small-screen density is reduced before generation, preserving uniqueness',()=>{
+  const {run}=fixture('sumuj',{settings:{maxGridSize:6},overrides:{size:8}});
+  assert.equal(run.instance.size,6);assert.equal(run.instance.board.length,36);
+  assert.ok(run.game.check(run.instance,run.instance.solution).correct);
+});
 test('20-item drills have correct answers, deterministic sampling and recordable summaries',()=>{
   for(const type of ['facts','divisibility','target']){
     const items=drillItems(type,[],123);assert.equal(items.length,20);assert.deepEqual(items,drillItems(type,[],123));assert.ok(items.every(i=>checkDrill(i,i.solution)));

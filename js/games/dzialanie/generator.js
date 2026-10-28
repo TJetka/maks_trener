@@ -9,7 +9,7 @@ export function generate(level, params, rng) {
   for (let attempt = 0; attempt < 201; attempt++) {
     numbers = Array.from({length: p.numberSlots}, () => int(rng, 1, p.max));
     operators = Array.from({length: p.numberSlots - 1}, () => pick(rng, p.operators));
-    if (level >= 13 && level <= 17 && p.operators.includes('*') && p.operators.includes('+')) operators = ['+', '*'];
+    if (level >= 13 && level <= 17 && p.numberSlots === 3 && p.operators.includes('*') && p.operators.includes('+')) operators = ['+', '*'];
     if (attempt === 200) {
       relaxed('dzialanie', p);
       numbers.fill(1); operators.fill(p.operators.find(o => o !== '-') ?? '-');

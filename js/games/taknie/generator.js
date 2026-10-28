@@ -10,7 +10,8 @@ export function generate(level, params, rng) {
     const a = int(rng, 2, Math.min(12, p.max)), b = int(rng, 2, Math.min(12, p.max));
     actual = a * b; claimed = actual + (truth ? 0 : pick(rng, [-10, 10])); statement = `${a} × ${b} = ${claimed}`; signature = `mul:${a}x${b}`;
   } else if (type === 'div') {
-    const d = pick(rng, [3,6,9]), n = int(rng, 2, Math.floor(p.max / d)) * d + (truth ? 0 : pick(rng, [1,2]));
+    const d = pick(rng, [3,6,9]), base = int(rng, 1, Math.floor(p.max / d)) * d;
+    const offset = pick(rng, [1,2]), n = base + (truth ? 0 : base + offset <= p.max ? offset : -1);
     actual = n % d === 0; claimed = true; statement = tr(pl.statements.div, {n,d}); signature = `div${d}:${n}`;
   } else if (type === 'rem') {
     const d = int(rng, 2, 9), n = int(rng, 10, p.max), r = truth ? n % d : (n % d + 1) % d;

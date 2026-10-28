@@ -87,6 +87,13 @@ export const pl = {
   freeHint: 'Buduj działanie, dotykając liczb, znaków i nawiasów. Cofnij usuwa ostatni element.',
   emptyAnswer: 'Uzupełnij wszystkie pola.', missing: '–', secondsUnit: 's', pointsUnit: 'pkt', minutesUnit: 'min',
   noResults: 'Twój pierwszy rekord jest przed Tobą. Wybierz grę i zacznij!',
+  divisibilityName: 'Podzielność przez {n}', families: {expr:'Kolejność działań',grid:'Zadania na planszy',rows:'Iloczyny w kolumnach',remainder:'Dzielenie z resztą',signs:'Plus i minus',compare:'Porównywanie',col:'Działania pisemne',chain:'Łańcuch działań',target:'Droga do celu'},
+  dayTraining:'Dzisiaj', dayRuns:'Próby dzisiaj', yourBest:'Twoje rekordy', smallStep:'Nawet 10 minut robi różnicę.', tip:'Mała podpowiedź', tipText:'Najpierw dokładność, potem szybkość. Spokojnie przeczytaj zasady i daj sobie chwilę na pomysł.',
+  hiddenGame:'Niespodzianka', randomReady:'Gry wylosowane. Poznasz je po starcie.', choose:'Wybierz', noAttempts:'Brak prób', confirmExit:'Zakończyć tę próbę i zapisać wynik?',
+  timeReading:'Czytaj spokojnie. Czas czytania zapisujemy osobno.', addedVariant:'Wariant zapisany.', adaptationTrend:'Adaptacja w ostatnich 7 dniach',
+  selectionHint:'Zaznaczone pola mają ramkę i znacznik ✓.', rulesShortcut:'Esc zamyka zasady', keyboardHint:'Enter zatwierdza · Backspace cofa',
+  incomplete:'Próba zakończona wcześniej', loading:'Chwila…', rawExport:'Pobierz kopię zapisanych danych',
+  appError:'Nie udało się otworzyć tego zadania. Wróć do wyboru gier i spróbuj ponownie.',
 };
 export const tr = (key, values = {}) => Object.entries(values).reduce((s, [k, v]) => s.replaceAll(`{${k}}`, String(v)), key);
 export function gameRules(id, p) {

@@ -8,7 +8,7 @@ export const APP_VERSION = '1.0.0';
 export class Run {
   constructor({gameId,seed,mode='free',settings={},overrides={},variantId,sessionId=null,now,wallNow=()=>Date.now(),sessionRemaining=()=>Infinity,readingMs=null}) {
     Object.assign(this,{gameId,seed,mode,settings,overrides,sessionId,wallNow,sessionRemaining,readingMs});
-    this.game=games[gameId]; this.rng=mulberry32(seed); this.clock=new Clock(now);
+    this.game=games[gameId]; this.rng=mulberry32(seed); this.clock=new Clock(now); this.responseClock=new Clock(now); this.responseClock.start();
     this.variantId=variantId ?? `${gameId}:preset`; this.startedAt=null;
     this.state=createScore(parameters(gameId,1,settings,overrides));
     this.events=[]; this.summary=emptySummary(); this.visibilityEvents=[]; this.levelStarted=0; this.lastResponse=0; this.lastAction=-Infinity; this.firstCorrectMs=null; this.peak=0; this.peakAt=null;
@@ -17,9 +17,10 @@ export class Run {
   next() {
     const previousDivisor=this.instance?.divisor;
     this.params=parameters(this.gameId,this.state.level,this.settings,this.overrides);
+    if(this.gameId==='sumuj'&&this.settings.maxGridSize)this.params.size=Math.min(this.params.size,this.settings.maxGridSize);
     this.instance=this.game.generate(this.state.level,{...this.params,previousDivisor},this.rng);
     this.selected=new Set(); this.marked=new Set();
-    this.levelStarted=this.clock.elapsed(); this.lastResponse=this.levelStarted;
+    this.levelStarted=this.clock.elapsed(); this.lastResponse=this.responseClock.elapsed();
   }
   start() { if (this.startedAt===null) { this.startedAt=this.wallNow(); this.clock.start(); } }
   remaining() {
@@ -45,9 +46,10 @@ export class Run {
       complete=this.selected.size>=this.instance.find;
     }
     const signature=this.gameId==='dzielnik' ? `div${this.instance.divisor}:${this.instance.board[answer]}` : this.instance.itemSignature;
-    const event={t:elapsed,level:this.state.level,correct,responseMs:elapsed-this.lastResponse,itemSignature:signature,answer:structuredClone(answer)};
-    this.lastResponse=elapsed; this.events.push(event); if (this.events.length>400) this.events.shift(); addEvent(this.summary,event);
-    if (correct && this.firstCorrectMs===null) this.firstCorrectMs=elapsed;
+    const observed=this.responseClock.elapsed();
+    const event={t:elapsed,level:this.state.level,correct,responseMs:observed-this.lastResponse,itemSignature:signature,answer:structuredClone(answer)};
+    this.lastResponse=observed; this.events.push(event); if (this.events.length>400) this.events.shift(); addEvent(this.summary,event);
+    if (correct && this.firstCorrectMs===null) this.firstCorrectMs=observed;
     const before=this.state.score; this.state=scoreAnswer(this.state,correct,complete);
     if (this.state.score>this.peak) { this.peak=this.state.score; this.peakAt=this.wallNow(); }
     if (this.state.ended) this.end(this.state.endReason);
@@ -55,7 +57,7 @@ export class Run {
   }
   visibility(hidden) {
     if (this.mode==='session') this.visibilityEvents.push({t:this.clock.elapsed(),hidden});
-    else if (hidden) this.clock.pause(); else this.clock.resume();
+    else if (hidden) { this.clock.pause(); this.responseClock.pause(); } else { this.clock.resume(); this.responseClock.resume(); }
   }
   end(reason) {
     if (this.endedAt!==undefined) return;

@@ -23,7 +23,8 @@ export function drillItems(type,runs,seed,max=10,focus=null) {
       const n=int(rng,2,Math.floor(200/d))*d+(rng()<.2?1:0);
       return {kind:'divisors',n,divisors:DIVISORS,solution:DIVISORS.filter(d=>n%d===0),itemSignature:`div${d}:${n}`};
     }
-    const a=int(rng,2,max),b=int(rng,2,max),operator=pick(rng,['+','-','*']);
+    let a=int(rng,2,max),b=int(rng,2,max);const operator=pick(rng,['+','-','*']);
+    if(operator==='-'&&a<b)[a,b]=[b,a];
     if (rng()<.5) return {kind:'operator',prompt:`${a} ? ${b} = ${operator==='+'?a+b:operator==='-'?a-b:a*b}`,solution:operator,options:['+','-','*'],itemSignature:'target:operator'};
     return {kind:'number',prompt:`${a} × ? = ${a*b}`,solution:b,itemSignature:`mul:${a}x${b}`};
   });
