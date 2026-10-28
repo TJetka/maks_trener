@@ -1,6 +1,6 @@
-import { el, button } from "../../ui/dom.js?v=1.0.1";
-import { orientations } from "../shared.js?v=1.0.1";
-import { pl } from "../../i18n/pl.js?v=1.0.1";
+import { el, button } from "../../ui/dom.js?v=1.1.0";
+import { orientations } from "../shared.js?v=1.1.0";
+import { pl } from "../../i18n/pl.js?v=1.1.0";
 export function render(i, api) {
   let rotation = 0;
   const shapes = orientations(i.shape, i.rotations),

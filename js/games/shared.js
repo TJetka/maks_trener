@@ -1,4 +1,4 @@
-import { LADDER, STREAK } from "../engine/scoring.js?v=1.0.1";
+import { LADDER, STREAK } from "../engine/scoring.js?v=1.1.0";
 export const ladder = (overrides) => ({ ...LADDER, ...overrides });
 export const streak = (overrides) => ({ ...STREAK, ...overrides });
 export const validNumber = (value) =>

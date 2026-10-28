@@ -1,6 +1,6 @@
-import { int, pick, shuffle } from "../../engine/rng.js?v=1.0.1";
-import { streak } from "../shared.js?v=1.0.1";
-import { gameRules } from "../../i18n/pl.js?v=1.0.1";
+import { int, pick, shuffle } from "../../engine/rng.js?v=1.1.0";
+import { streak } from "../shared.js?v=1.1.0";
+import { gameRules } from "../../i18n/pl.js?v=1.1.0";
 export const difficulty = (level) =>
   streak({
     points: 7,

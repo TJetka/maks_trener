@@ -1,4 +1,5 @@
-import { pl, tr } from "./i18n/pl.js?v=1.0.1";
+import { pl, tr } from "./i18n/pl.js?v=1.1.0";
+import { selectedDifficulty } from "./engine/difficulty.js?v=1.1.0";
 import {
   el,
   button,
@@ -9,8 +10,8 @@ import {
   metricName,
   numericEditor,
   symbol,
-} from "./ui/dom.js?v=1.0.1";
-import { icon } from "./ui/icons.js?v=1.0.1";
+} from "./ui/dom.js?v=1.1.0";
+import { icon } from "./ui/icons.js?v=1.1.0";
 import {
   shell,
   home,
@@ -21,14 +22,14 @@ import {
   drillsPage,
   statsPage,
   settingsPage,
-} from "./ui/pages.js?v=1.0.1";
-import { games, parameters } from "./games/registry.js?v=1.0.1";
-import { Run } from "./engine/run.js?v=1.0.1";
-import { newSeed, mulberry32, shuffle } from "./engine/rng.js?v=1.0.1";
-import { formatTime } from "./engine/clock.js?v=1.0.1";
-import { levelPoints } from "./engine/scoring.js?v=1.0.1";
-import { Session, sessionSummary } from "./engine/session.js?v=1.0.1";
-import { Drill } from "./engine/drill.js?v=1.0.1";
+} from "./ui/pages.js?v=1.1.0";
+import { games, parameters } from "./games/registry.js?v=1.1.0";
+import { Run } from "./engine/run.js?v=1.1.0";
+import { newSeed, mulberry32, shuffle } from "./engine/rng.js?v=1.1.0";
+import { formatTime } from "./engine/clock.js?v=1.1.0";
+import { levelPoints } from "./engine/scoring.js?v=1.1.0";
+import { Session, sessionSummary } from "./engine/session.js?v=1.1.0";
+import { Drill } from "./engine/drill.js?v=1.1.0";
 import {
   loadStore,
   saveStore,
@@ -37,23 +38,23 @@ import {
   parseImport,
   STORE_KEY,
   serializeStore,
-} from "./engine/store.js?v=1.0.1";
-import { summarizeRuns, runSummary } from "./engine/stats.js?v=1.0.1";
+} from "./engine/store.js?v=1.1.0";
+import { summarizeRuns, runSummary } from "./engine/stats.js?v=1.1.0";
 import {
   randomVariant,
   createVariant,
   validateParams,
-} from "./engine/mystery.js?v=1.0.1";
-import { render as dzielnik } from "./games/dzielnik/view.js?v=1.0.1";
-import { render as dzialanie } from "./games/dzialanie/view.js?v=1.0.1";
-import { render as sumuj } from "./games/sumuj/view.js?v=1.0.1";
-import { render as wybierz } from "./games/wybierz/view.js?v=1.0.1";
-import { render as podziel } from "./games/podziel/view.js?v=1.0.1";
-import { render as plusminus } from "./games/plusminus/view.js?v=1.0.1";
-import { render as taknie } from "./games/taknie/view.js?v=1.0.1";
-import { render as slupek } from "./games/slupek/view.js?v=1.0.1";
-import { render as kwadrat } from "./games/kwadrat/view.js?v=1.0.1";
-import { render as karuzela } from "./games/karuzela/view.js?v=1.0.1";
+} from "./engine/mystery.js?v=1.1.0";
+import { render as dzielnik } from "./games/dzielnik/view.js?v=1.1.0";
+import { render as dzialanie } from "./games/dzialanie/view.js?v=1.1.0";
+import { render as sumuj } from "./games/sumuj/view.js?v=1.1.0";
+import { render as wybierz } from "./games/wybierz/view.js?v=1.1.0";
+import { render as podziel } from "./games/podziel/view.js?v=1.1.0";
+import { render as plusminus } from "./games/plusminus/view.js?v=1.1.0";
+import { render as taknie } from "./games/taknie/view.js?v=1.1.0";
+import { render as slupek } from "./games/slupek/view.js?v=1.1.0";
+import { render as kwadrat } from "./games/kwadrat/view.js?v=1.1.0";
+import { render as karuzela } from "./games/karuzela/view.js?v=1.1.0";
 
 const views = {
   dzielnik,
@@ -116,6 +117,14 @@ const ctx = {
   startDrill,
   manualVariant,
   setting,
+  gameDifficulty: (id, difficulty) => {
+    store.settings.gameDifficulties = {
+      ...store.settings.gameDifficulties,
+      [id]: difficulty,
+    };
+    persist();
+  },
+  showStats: (difficulty) => contentPage(statsPage(ctx, difficulty), "stats"),
   exportData,
   importData,
   resetData,
@@ -199,7 +208,7 @@ function prepare(gameId, options = {}) {
   const variant = options.variant;
   if (variant) {
     try {
-      validateParams(gameId, variant.params);
+      validateParams(gameId, variant.params, variant.settings);
     } catch {
       notice(pl.invalidVariant);
       return;
@@ -208,7 +217,7 @@ function prepare(gameId, options = {}) {
   const params = parameters(
     gameId,
     1,
-    variant?.settings ?? store.settings,
+    playSettings(gameId, options),
     variant?.params ?? {},
   );
   const readAt = performance.now();
@@ -241,13 +250,27 @@ function prepare(gameId, options = {}) {
     ],
   );
 }
+function playSettings(gameId, options) {
+  if (options.variant) return options.variant.settings ?? {};
+  if (options.mode === "session")
+    return {
+      ...session.data.settings,
+      difficulty: session.data.difficulties[gameId],
+    };
+  return {
+    ...store.settings,
+    difficulty:
+      options.difficulty ?? selectedDifficulty(store.settings, gameId),
+  };
+}
 function startGame(gameId, options = {}) {
   if (options.mode === "session" && (!session || session.remaining() <= 0)) {
     if (session) endSession();
     return;
   }
   const variant = options.variant;
-  runOptions = { ...options };
+  const settings = playSettings(gameId, options);
+  runOptions = { ...options, difficulty: settings.difficulty };
   try {
     const maxGridSize = Math.max(
       5,
@@ -257,7 +280,7 @@ function startGame(gameId, options = {}) {
       gameId,
       seed: newSeed(),
       mode: options.mode ?? "free",
-      settings: { ...(variant?.settings ?? store.settings), maxGridSize },
+      settings: { ...settings, maxGridSize },
       overrides: variant?.params ?? {},
       variantId: variant?.id,
       sessionId: options.mode === "session" ? session.data.id : null,
@@ -283,7 +306,7 @@ function rulesAllowed() {
   return (
     !run ||
     run.mode !== "session" ||
-    !store.settings.rulesTimeout ||
+    !session?.data.settings?.rulesTimeout ||
     session.clock.elapsed() < 120000
   );
 }
@@ -358,7 +381,16 @@ function renderGame() {
         () => go(run.mode === "session" ? "session" : "train"),
         "text-button",
       ),
-      el("h1", {}, g.name),
+      el(
+        "div",
+        { className: "play-title" },
+        el("h1", {}, g.name),
+        el(
+          "span",
+          { className: "difficulty-badge" },
+          pl.difficulties[run.difficulty],
+        ),
+      ),
       gameNodes.ruleButton,
     ),
     run.mode === "session" ? gameNodes.sessionInfo : null,
@@ -533,7 +565,7 @@ function endRun() {
     heading(
       pl.endTitles[r.endReason] ?? pl.endTitles.quit,
       pl.endText,
-      games[r.gameId].name,
+      `${games[r.gameId].name} · ${pl.difficulties[r.difficulty ?? "legacy"]}`,
     ),
     el(
       "section",
@@ -589,7 +621,12 @@ function endRun() {
   maybeNudge();
 }
 function startSession(chosen) {
-  session = new Session([...chosen]);
+  session = new Session([...chosen], {
+    settings: store.settings,
+    difficulties: Object.fromEntries(
+      chosen.map((id) => [id, selectedDifficulty(store.settings, id)]),
+    ),
+  });
   lastSessionSecond = null;
   go("session");
 }
@@ -630,7 +667,11 @@ function manualVariant(gameId, params) {
     notice(pl.invalidVariant, 6000);
   }
 }
-function startDrill(type, focus = null) {
+function startDrill(
+  type,
+  focus = null,
+  difficulty = store.settings.difficulty,
+) {
   if (run && !run.state.ended) {
     run.end("quit");
     saveRun();
@@ -639,6 +680,7 @@ function startDrill(type, focus = null) {
   pending = null;
   drill = new Drill(type, store.runs, newSeed(), {
     max: store.settings.table12 ? 12 : 10,
+    difficulty,
     focus,
   });
   route = "drilling";
@@ -656,7 +698,11 @@ function startDrill(type, focus = null) {
     el(
       "div",
       { className: `play-page keypad-${store.settings.keypadSide}` },
-      heading(pl.drillTypes[type][0], pl.drillText, pl.nav.drill),
+      heading(
+        pl.drillTypes[type][0],
+        pl.drillText,
+        `${pl.nav.drill} · ${pl.difficulties[drill.difficulty]}`,
+      ),
       el(
         "section",
         { className: "play-panel" },
@@ -827,7 +873,9 @@ function finishDrill(show = true) {
       el(
         "div",
         { className: "actions" },
-        button(pl.restart, () => startDrill(r.variantId.split(":")[1])),
+        button(pl.restart, () =>
+          startDrill(r.variantId.split(":")[1], null, r.difficulty),
+        ),
         button(pl.nav.stats, () => go("stats"), "button secondary"),
       ),
     ),
@@ -886,7 +934,7 @@ function importData() {
         throw new Error("Invalid file");
       const incoming = parseImport(await file.text());
       for (const variant of Object.values(incoming.variants))
-        validateParams(variant.gameId, variant.params);
+        validateParams(variant.gameId, variant.params, variant.settings);
       store = mergeStores(store, incoming);
       go("stats");
       if (saveBlocked) notice(pl.corruptStore, 7000);
@@ -998,7 +1046,7 @@ function animate() {
       const node = document.querySelector(".session-banner .stat strong");
       if (node) node.textContent = formatTime(session.remaining());
     }
-    if (store.settings.rulesTimeout && session.clock.elapsed() >= 120000)
+    if (session.data.settings.rulesTimeout && session.clock.elapsed() >= 120000)
       document.querySelectorAll(".session-game .rules-copy").forEach((node) => {
         node.textContent = pl.rulesLocked;
       });

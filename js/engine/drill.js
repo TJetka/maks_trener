@@ -1,9 +1,9 @@
-import { mulberry32, int, pick } from "./rng.js?v=1.0.1";
-import { Clock } from "./clock.js?v=1.0.1";
-import { facts, emptySummary, addEvent } from "./stats.js?v=1.0.1";
-import { APP_VERSION } from "./run.js?v=1.0.1";
-import { evaluate } from "./math.js?v=1.0.1";
-import { recordDifficulty } from "./difficulty.js";
+import { mulberry32, int, pick } from "./rng.js?v=1.1.0";
+import { Clock } from "./clock.js?v=1.1.0";
+import { facts, emptySummary, addEvent } from "./stats.js?v=1.1.0";
+import { APP_VERSION } from "./run.js?v=1.1.0";
+import { evaluate } from "./math.js?v=1.1.0";
+import { recordDifficulty } from "./difficulty.js?v=1.1.0";
 const DIVISORS = [2, 3, 4, 5, 6, 9, 10];
 export function weightedPick(rng, items, weight) {
   const weights = items.map(weight);

@@ -1,5 +1,70 @@
 export const pl = {
   brand: "MaksTrener",
+  difficultyLabel: "Poziom trudności",
+  defaultDifficulty: "Domyślny poziom trudności",
+  difficulties: {
+    intermediate: "Średni",
+    expert: "Ekspert",
+    legacy: "Wcześniejsze wyniki",
+  },
+  difficultyIntro:
+    "Średni — mniejsze kroki i więcej czasu. Ekspert — złożone zadania od pierwszej planszy. Wybierz poziom osobno dla każdej gry.",
+  difficultyRecord: "Rekord na tym poziomie",
+  difficultyLegacy:
+    "Wyniki sprzed podziału na poziomy. Zachowaliśmy je osobno.",
+  ladderTimed: "{levels} poziomów · {minutes} min",
+  difficultyDescriptions: {
+    dzielnik: {
+      intermediate:
+        "12–16 pól, 2 liczby do znalezienia i prostsze dzielniki. 20 s na planszę.",
+      expert:
+        "24 pola, 3 liczby do znalezienia, dzielniki 3, 4, 6, 8 i 9. 12 s na planszę.",
+    },
+    dzialanie: {
+      intermediate:
+        "2–3 liczby, podane znaki i mniej dodatkowych kafelków. 6 minut.",
+      expert:
+        "3–4 liczby, samodzielny dobór znaków, kolejność działań i nawiasy. 5 minut.",
+    },
+    sumuj: {
+      intermediate:
+        "Plansza 5 × 5, kształty z 2–3 pól i mniejsze liczby. 6 minut.",
+      expert: "Większa plansza, kształty z 3–4 pól i większe sumy. 5 minut.",
+    },
+    wybierz: {
+      intermediate:
+        "2 kolumny. Wybierz 2 spośród 3–4 wierszy. 25 s na planszę.",
+      expert: "3 kolumny. Wybierz 3 spośród 4–5 wierszy. 18 s na planszę.",
+    },
+    podziel: {
+      intermediate:
+        "Dokładne dzielenie w tabliczce do 10 × 10. 20 s na zadanie.",
+      expert:
+        "Większe liczby i dzielenie z resztą od pierwszego zadania. 15 s.",
+    },
+    plusminus: {
+      intermediate: "2 brakujące znaki, tylko + i −, mniejsze liczby. 6 minut.",
+      expert:
+        "3–4 brakujące znaki, także mnożenie i kolejność działań. 5 minut.",
+    },
+    taknie: {
+      intermediate: "Tabliczka mnożenia i proste nierówności. 10 s na decyzję.",
+      expert: "Porównania iloczynów, dwa działania, podzielność i reszty. 6 s.",
+    },
+    slupek: {
+      intermediate:
+        "Liczby dwucyfrowe, dodawanie i odejmowanie, 1–2 luki. 6 minut.",
+      expert: "Liczby trzycyfrowe, 2–3 luki, także mnożenie. 5 minut.",
+    },
+    kwadrat: {
+      intermediate: "Plansza 3 × 3, 1–2 puste pola i mniejsze liczby. 6 minut.",
+      expert: "Plansze 3 × 3 i 4 × 4, 3–4 puste pola i większe sumy. 5 minut.",
+    },
+    karuzela: {
+      intermediate: "2–3 kroki dodawania i odejmowania, 4 odpowiedzi. 18 s.",
+      expert: "3–4 kroki z mnożeniem i dzieleniem, 6 odpowiedzi. 12 s.",
+    },
+  },
   tagline: "Małe kroki. Wielkie wyniki.",
   home: "Start",
   back: "Wróć",
@@ -352,6 +417,7 @@ export const pl = {
     columns: "Kolumny",
     add: "Dodawanie",
     subtract: "Odejmowanie",
+    mixed: "Dodawanie i odejmowanie",
     multiply: "Mnożenie",
   },
   invalidVariant:
@@ -416,5 +482,5 @@ export function gameRules(id, p) {
     operationWord: p.operation === "product" ? pl.productWord : pl.sumWord,
     rotationWord: p.rotations ? pl.rotations : pl.noRotations,
   });
-  return `${text} ${tr(p.archetype === "ladder" ? pl.ruleLadder : pl.ruleStreak, { ...p, first: p.basePoints + 1, last: p.basePoints + p.levels })}`;
+  return `${pl.difficulties[p.difficulty] ? `${pl.difficultyLabel}: ${pl.difficulties[p.difficulty]}. ` : ""}${text} ${tr(p.archetype === "ladder" ? pl.ruleLadder : pl.ruleStreak, { ...p, first: p.basePoints + 1, last: p.basePoints + p.levels })}`;
 }

@@ -1,15 +1,15 @@
-import * as dzielnik from "./dzielnik/generator.js?v=1.0.1";
-import * as dzialanie from "./dzialanie/generator.js?v=1.0.1";
-import * as sumuj from "./sumuj/generator.js?v=1.0.1";
-import * as wybierz from "./wybierz/generator.js?v=1.0.1";
-import * as podziel from "./podziel/generator.js?v=1.0.1";
-import * as plusminus from "./plusminus/generator.js?v=1.0.1";
-import * as taknie from "./taknie/generator.js?v=1.0.1";
-import * as slupek from "./slupek/generator.js?v=1.0.1";
-import * as kwadrat from "./kwadrat/generator.js?v=1.0.1";
-import * as karuzela from "./karuzela/generator.js?v=1.0.1";
-import { pl } from "../i18n/pl.js?v=1.0.1";
-import { tierParameters } from "../engine/difficulty.js";
+import * as dzielnik from "./dzielnik/generator.js?v=1.1.0";
+import * as dzialanie from "./dzialanie/generator.js?v=1.1.0";
+import * as sumuj from "./sumuj/generator.js?v=1.1.0";
+import * as wybierz from "./wybierz/generator.js?v=1.1.0";
+import * as podziel from "./podziel/generator.js?v=1.1.0";
+import * as plusminus from "./plusminus/generator.js?v=1.1.0";
+import * as taknie from "./taknie/generator.js?v=1.1.0";
+import * as slupek from "./slupek/generator.js?v=1.1.0";
+import * as kwadrat from "./kwadrat/generator.js?v=1.1.0";
+import * as karuzela from "./karuzela/generator.js?v=1.1.0";
+import { pl } from "../i18n/pl.js?v=1.1.0";
+import { tierParameters } from "../engine/difficulty.js?v=1.1.0";
 const modules = {
   dzielnik,
   dzialanie,

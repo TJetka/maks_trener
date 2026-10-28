@@ -1,7 +1,7 @@
-import { int, shuffle } from "../../engine/rng.js?v=1.0.1";
-import { total, equal, usesPalette } from "../../engine/math.js?v=1.0.1";
-import { ladder } from "../shared.js?v=1.0.1";
-import { gameRules } from "../../i18n/pl.js?v=1.0.1";
+import { int, shuffle } from "../../engine/rng.js?v=1.1.0";
+import { total, equal, usesPalette } from "../../engine/math.js?v=1.1.0";
+import { ladder } from "../shared.js?v=1.1.0";
+import { gameRules } from "../../i18n/pl.js?v=1.1.0";
 export const difficulty = (l) =>
   ladder({
     size: l >= 17 ? 4 : 3,

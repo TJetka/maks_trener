@@ -1,5 +1,5 @@
-import { el, button, symbol } from "../../ui/dom.js?v=1.0.1";
-import { pl } from "../../i18n/pl.js?v=1.0.1";
+import { el, button, symbol } from "../../ui/dom.js?v=1.1.0";
+import { pl } from "../../i18n/pl.js?v=1.1.0";
 export function render(i, api) {
   const steps = i.steps.map((s, j) =>
     el(

@@ -1,4 +1,4 @@
-import { el } from "./dom.js?v=1.0.1";
+import { el } from "./dom.js?v=1.1.0";
 const paths = {
   train: "M5 5h14v14H5z M9 9h2m-1-1v2m4 0 2-2m-7 6h2m3 0h2m-2 2h2",
   session: "M9 3h6m-3 3v2m6-2 2 2M12 8a7 7 0 1 0 0 14 7 7 0 0 0 0-14m0 3v4l3 1",

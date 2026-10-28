@@ -1,11 +1,11 @@
-import { int, pick, shuffle } from "../../engine/rng.js?v=1.0.1";
+import { int, pick, shuffle } from "../../engine/rng.js?v=1.1.0";
 import {
   evaluate,
   expressionTokens,
   usesPalette,
-} from "../../engine/math.js?v=1.0.1";
-import { ladder, relaxed } from "../shared.js?v=1.0.1";
-import { gameRules } from "../../i18n/pl.js?v=1.0.1";
+} from "../../engine/math.js?v=1.1.0";
+import { ladder, relaxed } from "../shared.js?v=1.1.0";
+import { gameRules } from "../../i18n/pl.js?v=1.1.0";
 export const difficulty = (l) =>
   ladder({
     numberSlots: l <= 12 ? 2 : l <= 17 ? 3 : 4,

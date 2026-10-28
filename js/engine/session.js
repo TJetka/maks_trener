@@ -1,5 +1,5 @@
-import { Clock } from "./clock.js?v=1.0.1";
-import { total } from "./math.js?v=1.0.1";
+import { Clock } from "./clock.js?v=1.1.0";
+import { total } from "./math.js?v=1.1.0";
 export const SESSION_MS = 45 * 60 * 1000;
 export class Session {
   constructor(

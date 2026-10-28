@@ -1,10 +1,10 @@
-import { Clock } from "./clock.js?v=1.0.1";
-import { mulberry32 } from "./rng.js?v=1.0.1";
-import { createScore, scoreAnswer, finish } from "./scoring.js?v=1.0.1";
-import { games, parameters } from "../games/registry.js?v=1.0.1";
-import { emptySummary, addEvent } from "./stats.js?v=1.0.1";
-import { presetId } from "./difficulty.js";
-export const APP_VERSION = "1.0.1";
+import { Clock } from "./clock.js?v=1.1.0";
+import { mulberry32 } from "./rng.js?v=1.1.0";
+import { createScore, scoreAnswer, finish } from "./scoring.js?v=1.1.0";
+import { games, parameters } from "../games/registry.js?v=1.1.0";
+import { emptySummary, addEvent } from "./stats.js?v=1.1.0";
+import { presetId } from "./difficulty.js?v=1.1.0";
+export const APP_VERSION = "1.1.0";
 /** Own one run; rendering and storage live outside this controller. All times are ms. */
 export class Run {
   constructor({

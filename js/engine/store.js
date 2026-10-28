@@ -1,5 +1,5 @@
-import { runSummary } from "./stats.js?v=1.0.1";
-import { DIFFICULTIES } from "./difficulty.js";
+import { runSummary } from "./stats.js?v=1.1.0";
+import { DIFFICULTIES } from "./difficulty.js?v=1.1.0";
 export const STORE_KEY = "makstrener.v1";
 export const DEFAULT_SETTINGS = {
   grade: 4,

@@ -36,7 +36,7 @@ keeps the files static. After Pages finishes publishing, the default URL is
 <https://tjetka.github.io/maks_trener/>.
 
 Assets use release query strings, including every imported application module.
-Run `npm run release:version -- 1.0.2` with the next version to update those queries,
+Run `npm run release:version -- 1.1.1` with the next version to update those queries,
 package metadata and run provenance together. There is deliberately no service
 worker, so it cannot serve an old cached shell. Reload after a deploy. Initial
 loading requires the site to be reachable; once loaded, gameplay uses no network.
@@ -70,6 +70,38 @@ At narrow widths Sumuj reduces board density to keep cells at least 44 px wide.
 The effective maximum grid size is included in each run's provenance; a saved
 variant can therefore have a smaller board on a phone than on a desktop.
 
+## Difficulty tiers
+
+Every game has **Średni (Intermediate)** and **Ekspert (Expert)**. Intermediate is
+the default. Choose a tier on each game card; the choice persists for that game.
+Settings provides the default for games without a saved choice and for drills and
+mystery variants. Both tiers progress within a run. Ladder games allow six minutes
+on Intermediate and five on Expert; scoring rules are unchanged.
+
+| Game         | Intermediate                                       | Expert                                                                  |
+| ------------ | -------------------------------------------------- | ----------------------------------------------------------------------- |
+| Dzielnik     | 12–16 cells, find 2, simpler divisors, 20 s        | 24 cells, find 3, larger numbers and harder divisors, 12 s              |
+| Działanie    | 2–3 numbers, supplied operators, one distractor    | 3–4 numbers, choose operators, precedence and brackets, two distractors |
+| Sumuj        | 5×5, shapes of 2–3 cells, smaller sums             | 6×6 to 7×7, shapes of 3–4 cells, larger sums                            |
+| Wybierz      | Pick 2 of 3–4 rows, two columns, 25 s              | Pick 3 of 4–5 rows, three columns, 18 s                                 |
+| Podziel to   | Exact division within 10×10, 20 s                  | Larger dividends, nonzero remainders from the start, 15 s               |
+| Plus i minus | Two missing signs, addition/subtraction            | 3–4 missing signs including multiplication; targets capped at 1,000     |
+| Tak czy Nie  | Times tables and simple inequalities, 10 s         | Products, two-step arithmetic, divisibility and remainders, 6 s         |
+| Słupek       | Two-digit addition/subtraction, 1–2 blanks         | Three-digit operations, 2–3 blanks, later multiplication                |
+| Kwadrat      | 3×3, 1–2 blanks, smaller sums                      | 3×3 to 4×4, 3–4 blanks, larger sums                                     |
+| Karuzela     | 2–3 addition/subtraction steps, four answers, 18 s | 3–4 steps including multiplication/division, six answers, 12 s          |
+
+Grade settings still adjust number ranges. Mystery profiles vary inside the
+selected tier; manual profiles can override its parameters. Drills use easier
+facts/divisors and two-number targets on Intermediate, versus factors 6–10 (or
+6–12), larger divisibility questions and three-number targets on Expert.
+
+Each simulation freezes the selected tier and settings for both games when it
+starts. Best scores and statistics are separated by difficulty. Existing records
+remain untouched under **Wcześniejsze wyniki**; old saved mystery variants retain
+their original settings. Export/import includes tier metadata and accepts old
+version-1 exports. Mystery variant records remain separate from preset records.
+
 ## Tests
 
 ```sh
@@ -78,7 +110,8 @@ npm test
 ```
 
 The native Node test runner covers 10,000 seeded instances for **each of the ten
-games**, uniqueness solvers, score tables, monotonic clocks, suspended-tab
+games in each tier**, plus the 100,000 original-ramp instances, uniqueness solvers,
+tier migration and session isolation, score tables, monotonic clocks, suspended-tab
 deadlines, bounded event logs, validation, import merging, drill sampling, mystery
 profiles across difficulty boundaries, and a full tiny training pipeline.
 
@@ -98,7 +131,8 @@ and outstanding device checks.
 `js/engine/` contains pure arithmetic/scoring, clocks, run/session controllers,
 storage and statistics. `js/games/<id>/generator.js` exports `generate`, `check`,
 `difficulty` and `rulesCard`; each `view.js` only renders/input-binds that game.
-Parameter ramps live beside their generators, and the manual-variant allowlist
+Original parameter ramps live beside their generators; tier profiles and record
+classification live in `js/engine/difficulty.js`. The manual-variant allowlist
 lives in `js/engine/mystery.js`. `js/i18n/pl.js` owns application copy. `js/ui/`
 contains shared DOM primitives and page layouts; `js/app.js` coordinates them.
 

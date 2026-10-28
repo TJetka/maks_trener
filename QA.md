@@ -4,7 +4,8 @@
 
 - Native Node suite through `npm test`; static module checks through `npm run check`.
 - Pytest entry points run those same checks without network calls.
-- 100,000 deterministic generated puzzles total, plus 1,000 mystery profiles at
+- 300,000 deterministic generated puzzles: 100,000 original-ramp instances and
+  100,000 per new tier across grades 3–5. Plus 1,000 mystery profiles per tier at
   initial and later difficulty boundaries.
 - Brute-force uniqueness for Sumuj placements, Wybierz subsets, Słupek digits and
   Kwadrat palette assignments.
@@ -15,6 +16,11 @@
   browser suspension.
 - Import/export round trip, duplicate merging, invalid imports, storage failure,
   400-event retention with complete summary counts, deterministic drill sets.
+- Tier preferences and legacy storage migration without rewriting old records;
+  separate score identifiers, full runs with tier provenance, frozen session
+  settings, rejection of a mismatched session tier, and manual profile defaults.
+- Tiered drills and acceptance of equivalent operators (e.g. both + and × for
+  `2 ? 2 = 4`). Expert sign puzzles require multiplication and cap targets at 1,000.
 
 ## Browser checks during implementation
 

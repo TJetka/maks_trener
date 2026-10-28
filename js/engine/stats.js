@@ -1,4 +1,4 @@
-import { median, total } from "./math.js?v=1.0.1";
+import { median, total } from "./math.js?v=1.1.0";
 export const emptySummary = () => ({
   count: 0,
   correct: 0,

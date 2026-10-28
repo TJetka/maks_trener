@@ -1,4 +1,4 @@
-import { pl, tr } from "../i18n/pl.js?v=1.0.1";
+import { pl, tr } from "../i18n/pl.js?v=1.1.0";
 import {
   el,
   button,
@@ -10,19 +10,60 @@ import {
   seconds,
   date,
   metricName,
-} from "./dom.js?v=1.0.1";
-import { icon, iconBox } from "./icons.js?v=1.0.1";
-import { games, parameters } from "../games/registry.js?v=1.0.1";
+} from "./dom.js?v=1.1.0";
+import { icon, iconBox } from "./icons.js?v=1.1.0";
+import { games, parameters } from "../games/registry.js?v=1.1.0";
 import {
   summarizeRuns,
   facts,
   heatmap,
   mysteryStats,
   levelHistogram,
-} from "../engine/stats.js?v=1.0.1";
-import { sessionSummary } from "../engine/session.js?v=1.0.1";
-import { formatTime } from "../engine/clock.js?v=1.0.1";
-import { knobSchema } from "../engine/mystery.js?v=1.0.1";
+} from "../engine/stats.js?v=1.1.0";
+import { sessionSummary } from "../engine/session.js?v=1.1.0";
+import { formatTime } from "../engine/clock.js?v=1.1.0";
+import { knobSchema } from "../engine/mystery.js?v=1.1.0";
+import {
+  DIFFICULTIES,
+  selectedDifficulty,
+  recordDifficulty,
+  presetId,
+} from "../engine/difficulty.js?v=1.1.0";
+
+function difficultyPicker(value, onChange, label = pl.difficultyLabel) {
+  const group = el("div", {
+    className: "difficulty-picker",
+    role: "group",
+    "aria-label": label,
+  });
+  const paint = () =>
+    group.replaceChildren(
+      ...DIFFICULTIES.map((tier) =>
+        button(
+          pl.difficulties[tier],
+          () => {
+            value = tier;
+            onChange(tier);
+            paint();
+          },
+          `difficulty-option ${tier === value ? "active" : ""}`,
+          { "aria-pressed": String(tier === value) },
+        ),
+      ),
+    );
+  paint();
+  return group;
+}
+function defaultDifficultyField(ctx) {
+  return field(
+    pl.difficultyLabel,
+    select(
+      DIFFICULTIES.map((t) => [t, pl.difficulties[t]]),
+      ctx.store.settings.difficulty,
+      (t) => ctx.setting("difficulty", t),
+    ),
+  );
+}
 
 export function shell(content, ctx, route) {
   const brand = button(
@@ -211,8 +252,27 @@ export function home(ctx) {
   );
 }
 function gameCard(g, ctx, action) {
-  const p = parameters(g.id, 1, ctx.store.settings),
-    best = summarizeRuns(ctx.store.runs.filter((r) => r.gameId === g.id)).best;
+  let difficulty = selectedDifficulty(ctx.store.settings, g.id);
+  const description = el("p", { className: "difficulty-description" });
+  const meta = el("p", { className: "game-meta" });
+  const bestLabel = el("span");
+  function paint() {
+    const p = parameters(g.id, 1, { ...ctx.store.settings, difficulty });
+    const best = summarizeRuns(
+      ctx.store.runs.filter(
+        (r) => r.gameId === g.id && r.variantId === presetId(g.id, difficulty),
+      ),
+    ).best;
+    description.textContent = pl.difficultyDescriptions[g.id][difficulty];
+    meta.textContent =
+      p.archetype === "ladder"
+        ? tr(pl.ladderTimed, { levels: p.levels, minutes: p.seconds / 60 })
+        : tr(pl.streak, { s: p.seconds });
+    bestLabel.textContent = best
+      ? `${pl.difficultyRecord}: ${best}`
+      : pl.noBest;
+  }
+  paint();
   return el(
     "article",
     { className: "game-card" },
@@ -236,22 +296,24 @@ function gameCard(g, ctx, action) {
         ),
       ),
       el("p", { className: "subtle" }, g.description),
-      el(
-        "p",
-        { className: "game-meta" },
-        p.archetype === "ladder" ? pl.ladder : tr(pl.streak, { s: p.seconds }),
+      difficultyPicker(
+        difficulty,
+        (tier) => {
+          difficulty = tier;
+          ctx.gameDifficulty(g.id, tier);
+          paint();
+        },
+        `${pl.difficultyLabel}: ${g.name}`,
       ),
+      description,
+      meta,
       el(
         "div",
         { className: "game-card-bottom" },
-        el(
-          "span",
-          {},
-          best ? [icon("trophy", 17), ` ${pl.best}: ${best}`] : pl.noBest,
-        ),
+        bestLabel,
         button(
           [pl.play, icon("arrow", 17)],
-          () => action(g.id),
+          () => action(g.id, { difficulty }),
           "button small",
         ),
       ),
@@ -284,6 +346,7 @@ export function training(ctx) {
     "div",
     {},
     heading(pl.training, pl.trainingText, pl.nav.train),
+    el("p", { className: "difficulty-intro" }, pl.difficultyIntro),
     tabs,
     list,
   );
@@ -316,12 +379,21 @@ export function sessionPage(ctx) {
             ),
             el("h2", {}, games[id].name),
             el(
+              "span",
+              { className: "difficulty-badge" },
+              pl.difficulties[d.difficulties?.[id] ?? "legacy"],
+            ),
+            el(
               "p",
               { className: "rules-copy" },
-              ctx.store.settings.rulesTimeout &&
-                ctx.session.clock.elapsed() >= 120000
+              d.settings?.rulesTimeout && ctx.session.clock.elapsed() >= 120000
                 ? pl.rulesLocked
-                : games[id].rulesCard(parameters(id, 1, ctx.store.settings)),
+                : games[id].rulesCard(
+                    parameters(id, 1, {
+                      ...d.settings,
+                      difficulty: d.difficulties?.[id],
+                    }),
+                  ),
             ),
             el(
               "div",
@@ -372,6 +444,11 @@ export function sessionPage(ctx) {
                   },
                 ),
               ),
+          difficultyPicker(
+            selectedDifficulty(ctx.store.settings, id),
+            (tier) => ctx.gameDifficulty(id, tier),
+            `${pl.difficultyLabel}: ${tr(pl.slot, { n: index + 1 })}`,
+          ),
         ),
       ),
     );
@@ -463,6 +540,11 @@ export function sessionResult(data, ctx) {
           { className: "panel" },
           el("h2", {}, games[id].name),
           el(
+            "span",
+            { className: "difficulty-badge" },
+            pl.difficulties[data.difficulties?.[id] ?? "legacy"],
+          ),
+          el(
             "div",
             { className: "stat-row" },
             stat(pl.best, data.bests[id]),
@@ -500,6 +582,7 @@ export function mysteryPage(ctx) {
       "section",
       { className: "panel mystery-hero" },
       el("div", { className: "mystery-symbol large" }, "?"),
+      defaultDifficultyField(ctx),
       field(
         pl.choose,
         select(
@@ -529,6 +612,11 @@ export function mysteryPage(ctx) {
                 { className: "panel" },
                 el("p", { className: "eyebrow" }, tr(pl.variant, { n: j + 1 })),
                 el("h3", {}, games[v.gameId].name),
+                el(
+                  "span",
+                  { className: "difficulty-badge" },
+                  pl.difficulties[recordDifficulty(v)],
+                ),
                 el("p", { className: "subtle" }, v.rulesText),
                 el(
                   "div",
@@ -553,6 +641,7 @@ export function drillsPage(ctx) {
     "div",
     {},
     heading(pl.drillTitle, pl.drillText, pl.nav.drill),
+    defaultDifficultyField(ctx),
     el(
       "div",
       { className: "drill-grid" },
@@ -599,14 +688,22 @@ function table(headers, rows) {
     ),
   );
 }
-export function statsPage(ctx) {
-  const all = summarizeRuns(ctx.store.runs),
-    weak = facts(ctx.store.runs)
+export function statsPage(ctx, difficulty = ctx.store.settings.difficulty) {
+  const drillDifficulty = DIFFICULTIES.includes(difficulty)
+    ? difficulty
+    : ctx.store.settings.difficulty;
+  const tierRuns = ctx.store.runs.filter(
+    (r) => recordDifficulty(r) === difficulty,
+  );
+  const all = summarizeRuns(tierRuns),
+    weak = facts(tierRuns)
       .filter((f) => f.weakness > 0)
       .slice(0, 3),
-    variants = mysteryStats(ctx.store),
+    variants = mysteryStats(ctx.store).filter(
+      (v) => recordDifficulty(v) === difficulty,
+    ),
     week = Date.now() - 7 * 86400000;
-  const heat = heatmap(ctx.store.runs, ctx.store.settings.table12 ? 12 : 10);
+  const heat = heatmap(tierRuns, ctx.store.settings.table12 ? 12 : 10);
   const matrix = el(
     "div",
     { className: "heatmap", style: { "--cols": heat.length + 1 } },
@@ -622,7 +719,7 @@ export function statsPage(ctx) {
             el("strong", {}, f.count ? percent(f.accuracy) : "–"),
             f.count ? el("small", {}, seconds(f.medianMs)) : null,
           ),
-          () => ctx.startDrill("facts", `mul:${f.a}x${f.b}`),
+          () => ctx.startDrill("facts", `mul:${f.a}x${f.b}`, drillDifficulty),
           `heat-cell ${f.count ? (f.accuracy < 0.8 ? "heat-weak" : "heat-good") : ""}`,
           {
             "aria-label": `${f.a} × ${f.b}: ${f.count ? `${percent(f.accuracy)}, ${seconds(f.medianMs)}` : pl.noAttempts}. ${pl.practice}`,
@@ -632,7 +729,9 @@ export function statsPage(ctx) {
     ]),
   );
   const gameStats = Object.values(games).map((g) => {
-    const runs = ctx.store.runs.filter((r) => r.gameId === g.id),
+    const runs = tierRuns.filter(
+        (r) => r.gameId === g.id && r.mode !== "mystery",
+      ),
       s = summarizeRuns(runs),
       recent = summarizeRuns(runs.filter((r) => r.startedAt >= week));
     const histogram = levelHistogram(runs);
@@ -716,6 +815,22 @@ export function statsPage(ctx) {
     "div",
     {},
     heading(pl.statsTitle, pl.statsText, pl.nav.stats),
+    field(
+      pl.difficultyLabel,
+      select(
+        [
+          ...DIFFICULTIES,
+          ...(ctx.store.runs.some((r) => recordDifficulty(r) === "legacy")
+            ? ["legacy"]
+            : []),
+        ].map((t) => [t, pl.difficulties[t]]),
+        difficulty,
+        ctx.showStats,
+      ),
+    ),
+    difficulty === "legacy"
+      ? el("p", { className: "difficulty-intro" }, pl.difficultyLegacy)
+      : null,
     el(
       "div",
       { className: "overview-stats" },
@@ -760,6 +875,7 @@ export function statsPage(ctx) {
                           ? "facts"
                           : "target",
                       f.signature,
+                      drillDifficulty,
                     ),
                   "button secondary small",
                 ),
@@ -791,7 +907,10 @@ export function statsPage(ctx) {
                 button(sum.sum, () => ctx.showSessionResult(s), "text-button"),
                 percent(sum.used),
                 s.games
-                  .map((id) => `${games[id].name}: ${s.runsPerGame[id]}`)
+                  .map(
+                    (id) =>
+                      `${games[id].name} (${pl.difficulties[s.difficulties?.[id] ?? "legacy"]}): ${s.runsPerGame[id]}`,
+                  )
                   .join(" · "),
                 sum.timeToBest === null ? "–" : formatTime(sum.timeToBest),
               ];
@@ -946,6 +1065,17 @@ export function settingsPage(ctx) {
     el(
       "section",
       { className: "panel settings-panel" },
+      field(
+        pl.defaultDifficulty,
+        select(
+          DIFFICULTIES.map((t) => [t, pl.difficulties[t]]),
+          settings.difficulty,
+          (t) => {
+            ctx.setting("difficulty", t);
+            paint();
+          },
+        ),
+      ),
       el(
         "div",
         { className: "form-grid" },
@@ -954,7 +1084,10 @@ export function settingsPage(ctx) {
           select(
             [3, 4, 5].map((n) => [n, tr(pl.grade, { n })]),
             settings.grade,
-            (v) => ctx.setting("grade", Number(v)),
+            (v) => {
+              ctx.setting("grade", Number(v));
+              paint();
+            },
           ),
         ),
         field(

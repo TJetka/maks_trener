@@ -1,5 +1,5 @@
-import { games, parameters } from "../games/registry.js?v=1.0.1";
-import { mulberry32, pick, hash } from "./rng.js?v=1.0.1";
+import { games, parameters } from "../games/registry.js?v=1.1.0";
+import { mulberry32, pick, hash } from "./rng.js?v=1.1.0";
 const number = (min, max) => ({ type: "number", min, max });
 const choice = (options) => ({ type: "choice", options });
 const toggle = { type: "boolean" };

@@ -1,4 +1,4 @@
-import { pl, tr } from "../i18n/pl.js?v=1.0.1";
+import { pl, tr } from "../i18n/pl.js?v=1.1.0";
 export function el(tag, attrs = {}, ...children) {
   const node = document.createElement(tag);
   for (const [key, value] of Object.entries(attrs)) {

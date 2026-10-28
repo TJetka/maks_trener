@@ -1,5 +1,5 @@
-import { el, button, symbol } from "../../ui/dom.js?v=1.0.1";
-import { pl, tr } from "../../i18n/pl.js?v=1.0.1";
+import { el, button, symbol } from "../../ui/dom.js?v=1.1.0";
+import { pl, tr } from "../../i18n/pl.js?v=1.1.0";
 export function render(i, api) {
   const signs = i.numbers.slice(1).map(() => i.allowed[0]);
   const expression = el(
