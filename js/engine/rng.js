@@ -18,7 +18,9 @@ export function shuffle(rng, values) {
   }
   return result;
 }
-export function newSeed() { return crypto.getRandomValues(new Uint32Array(1))[0]; }
+export function newSeed() {
+  return crypto.getRandomValues(new Uint32Array(1))[0];
+}
 export function hash(text) {
   let h = 2166136261;
   for (const c of text) h = Math.imul(h ^ c.charCodeAt(0), 16777619);

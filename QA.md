@@ -1,0 +1,49 @@
+# Verification
+
+## Automated
+
+- Native Node suite through `npm test`; static module checks through `npm run check`.
+- Pytest entry points run those same checks without network calls.
+- 100,000 deterministic generated puzzles total, plus 1,000 mystery profiles at
+  initial and later difficulty boundaries.
+- Brute-force uniqueness for Sumuj placements, Wybierz subsets, Słupek digits and
+  Kwadrat palette assignments.
+- Ladder 12…31 = 430, penalties, final zero clamp; Streak partial answers, three
+  strikes, timeout and 90-level cap.
+- Injected monotonic clock: five-minute drift, free-play visibility pause,
+  uninterrupted sessions, 45-minute cutoff and correct earliest deadline after
+  browser suspension.
+- Import/export round trip, duplicate merging, invalid imports, storage failure,
+  400-event retention with complete summary counts, deterministic drill sets.
+
+## Browser checks during implementation
+
+Chrome on macOS, desktop and an actual 360 px wide iframe viewport:
+
+- Home, navigation, game selection and rules dialog.
+- Dzielnik partial selections, board completion, changing divisor and +7 score.
+- Działanie token entry, valid alternative filling, +12 score and next level.
+- Wybierz row selection, +8 score and next board.
+- Podziel to keypad input, Plus i minus sign cycling, Tak czy Nie decisions,
+  Słupek digit entry, Kwadrat palette assignment and Karuzela result selection;
+  correct scoring and next-level transitions in each.
+- Full 20-item multiplication/division drill through visible controls: 20/20,
+  100% accuracy and slowest-facts summary.
+- Session start, continuous timer, best-score recording, result and tie-break.
+- Manual Sumuj variant, persistence across reload and replay.
+- Phone board density: 6×6 board, cells approximately 48 px wide, page width and
+  scroll width both 360 px. No horizontal page overflow.
+- Browser console checked for errors.
+- JSON export downloaded successfully. Browser import automation was blocked by
+  the Chrome extension's file-upload permission; no extension permissions were
+  changed. Import validation and merge behavior are covered by automated tests.
+
+## Release checks that require real devices
+
+Not certified by the automated tests: iPad Safari, Android Chrome, Windows
+Chrome/Edge, an uninterrupted real 45-minute tablet session, and a Lighthouse
+accessibility score of at least 90. Check portrait/landscape rotation while playing,
+OS backgrounding/foregrounding, physical keyboard navigation and browser storage
+availability on those devices before contest use.
+
+No service worker/offline installation is included (optional in the PRD).
