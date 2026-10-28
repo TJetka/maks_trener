@@ -1,7 +1,10 @@
 import { runSummary } from "./stats.js?v=1.0.1";
+import { DIFFICULTIES } from "./difficulty.js";
 export const STORE_KEY = "makstrener.v1";
 export const DEFAULT_SETTINGS = {
   grade: 4,
+  difficulty: "intermediate",
+  gameDifficulties: {},
   keypadSide: "right",
   sounds: false,
   reveal: true,
@@ -11,7 +14,7 @@ export const DEFAULT_SETTINGS = {
 };
 export const freshStore = () => ({
   version: 1,
-  settings: { ...DEFAULT_SETTINGS },
+  settings: { ...DEFAULT_SETTINGS, gameDifficulties: {} },
   runs: [],
   sessions: [],
   variants: {},
@@ -107,7 +110,27 @@ export function validateStore(s) {
   ])
     if (key in s.settings && typeof s.settings[key] !== "boolean")
       throw new Error("Invalid setting");
+  if (
+    s.settings.difficulty !== undefined &&
+    !DIFFICULTIES.includes(s.settings.difficulty)
+  )
+    throw new Error("Invalid difficulty");
+  if (
+    s.settings.gameDifficulties !== undefined &&
+    (!s.settings.gameDifficulties ||
+      Array.isArray(s.settings.gameDifficulties) ||
+      typeof s.settings.gameDifficulties !== "object" ||
+      !Object.entries(s.settings.gameDifficulties).every(
+        ([id, tier]) => gameIds.includes(id) && DIFFICULTIES.includes(tier),
+      ))
+  )
+    throw new Error("Invalid game difficulties");
   for (const r of s.runs) {
+    if (
+      r.difficulty !== undefined &&
+      ![...DIFFICULTIES, "legacy"].includes(r.difficulty)
+    )
+      throw new Error("Invalid run difficulty");
     if (
       typeof r.id !== "string" ||
       !gameIds.includes(r.gameId) ||
@@ -126,6 +149,12 @@ export function validateStore(s) {
       throw new Error("Invalid run");
   }
   for (const s1 of s.sessions) {
+    if (
+      s1.difficulties !== undefined &&
+      (!s1.difficulties ||
+        !s1.games?.every((id) => DIFFICULTIES.includes(s1.difficulties[id])))
+    )
+      throw new Error("Invalid session difficulty");
     if (
       typeof s1.id !== "string" ||
       !finite(s1.startedAt) ||
@@ -153,6 +182,8 @@ export function validateStore(s) {
       !gameIds.includes(v.gameId) ||
       v.gameId === "drill" ||
       typeof v.rulesText !== "string" ||
+      (v.settings?.difficulty !== undefined &&
+        !DIFFICULTIES.includes(v.settings.difficulty)) ||
       !v.params ||
       typeof v.params !== "object" ||
       Array.isArray(v.params)
@@ -164,12 +195,22 @@ export function loadStore(storage) {
   try {
     const raw = storage.getItem(STORE_KEY);
     return {
-      data: raw ? validateStore(JSON.parse(raw)) : freshStore(),
+      data: raw ? withDefaults(validateStore(JSON.parse(raw))) : freshStore(),
       error: null,
     };
   } catch {
     return { data: freshStore(), error: "corrupt" };
   }
+}
+function withDefaults(data) {
+  return {
+    ...data,
+    settings: {
+      ...DEFAULT_SETTINGS,
+      ...data.settings,
+      gameDifficulties: { ...(data.settings.gameDifficulties ?? {}) },
+    },
+  };
 }
 export function mergeStores(current, incoming) {
   validateStore(incoming);

@@ -3,6 +3,7 @@ import { mulberry32 } from "./rng.js?v=1.0.1";
 import { createScore, scoreAnswer, finish } from "./scoring.js?v=1.0.1";
 import { games, parameters } from "../games/registry.js?v=1.0.1";
 import { emptySummary, addEvent } from "./stats.js?v=1.0.1";
+import { presetId } from "./difficulty.js";
 export const APP_VERSION = "1.0.1";
 /** Own one run; rendering and storage live outside this controller. All times are ms. */
 export class Run {
@@ -35,7 +36,8 @@ export class Run {
     this.clock = new Clock(now);
     this.responseClock = new Clock(now);
     this.responseClock.start();
-    this.variantId = variantId ?? `${gameId}:preset`;
+    this.difficulty = settings.difficulty ?? "legacy";
+    this.variantId = variantId ?? presetId(gameId, this.difficulty);
     this.startedAt = null;
     this.state = createScore(parameters(gameId, 1, settings, overrides));
     this.events = [];
@@ -179,6 +181,7 @@ export class Run {
     return {
       id: `r_${this.startedAt ?? this.endedAt}_${this.seed}`,
       gameId: this.gameId,
+      difficulty: this.difficulty,
       variantId: this.variantId,
       mode: this.mode,
       sessionId: this.sessionId,

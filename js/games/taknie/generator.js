@@ -8,11 +8,13 @@ export function generate(level, params, rng) {
     truth = rng() < 0.5;
   const type =
     p.type ??
-    (level <= 30
-      ? pick(rng, ["mul", "inequality"])
-      : level <= 60
-        ? pick(rng, ["compare", "twoStep"])
-        : pick(rng, ["div", "rem"]));
+    (p.itemTypes
+      ? pick(rng, p.itemTypes)
+      : level <= 30
+        ? pick(rng, ["mul", "inequality"])
+        : level <= 60
+          ? pick(rng, ["compare", "twoStep"])
+          : pick(rng, ["div", "rem"]));
   let statement, actual, claimed, signature;
   if (type === "mul") {
     const a = int(rng, 2, Math.min(12, p.max)),

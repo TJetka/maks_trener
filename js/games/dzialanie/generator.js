@@ -1,5 +1,9 @@
 import { int, pick, shuffle } from "../../engine/rng.js?v=1.0.1";
-import { evaluate, expressionTokens, usesPalette } from "../../engine/math.js?v=1.0.1";
+import {
+  evaluate,
+  expressionTokens,
+  usesPalette,
+} from "../../engine/math.js?v=1.0.1";
 import { ladder, relaxed } from "../shared.js?v=1.0.1";
 import { gameRules } from "../../i18n/pl.js?v=1.0.1";
 export const difficulty = (l) =>
@@ -15,19 +19,22 @@ export function generate(level, params, rng) {
   const p = { ...difficulty(level), ...params };
   let numbers, operators, target;
   for (let attempt = 0; attempt < 201; attempt++) {
-    numbers = Array.from({ length: p.numberSlots }, () => int(rng, 1, p.max));
+    numbers = Array.from({ length: p.numberSlots }, () =>
+      int(rng, p.minOperand ?? 1, p.max),
+    );
     operators = Array.from({ length: p.numberSlots - 1 }, () =>
       pick(rng, p.operators),
     );
     if (numbers.length === 2 && operators[0] === "/") numbers[0] *= numbers[1];
     if (
-      level >= 13 &&
-      level <= 17 &&
-      p.numberSlots === 3 &&
+      ((p.requireMixed && p.numberSlots >= 3) ||
+        (level >= 13 && level <= 17 && p.numberSlots === 3)) &&
       p.operators.includes("*") &&
       p.operators.includes("+")
-    )
-      operators = ["+", "*"];
+    ) {
+      operators[0] = "+";
+      operators[1] = "*";
+    }
     if (attempt === 200) {
       relaxed("dzialanie", p);
       numbers.fill(1);

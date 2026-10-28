@@ -9,6 +9,7 @@ import * as slupek from "./slupek/generator.js?v=1.0.1";
 import * as kwadrat from "./kwadrat/generator.js?v=1.0.1";
 import * as karuzela from "./karuzela/generator.js?v=1.0.1";
 import { pl } from "../i18n/pl.js?v=1.0.1";
+import { tierParameters } from "../engine/difficulty.js";
 const modules = {
   dzielnik,
   dzialanie,
@@ -37,10 +38,17 @@ export const games = Object.fromEntries(
   ]),
 );
 export function parameters(id, level, settings = {}, overrides = {}) {
-  const p = games[id].difficulty(level);
+  const p = tierParameters(
+    id,
+    level,
+    games[id].difficulty(level),
+    settings.difficulty,
+  );
   if (settings.grade === 3 && p.max)
     p.max = Math.max(9, Math.floor(p.max * 0.75));
   if (settings.grade === 5 && p.max) p.max = Math.floor(p.max * 1.2);
+  if (id === "taknie") p.max = Math.max(10, p.max);
+  if (id === "wybierz" && p.operation === "product") p.max = Math.min(9, p.max);
   if (settings.table12 && id === "dzialanie" && level > 6) p.max = 12;
   return { ...p, ...overrides };
 }

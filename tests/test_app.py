@@ -32,5 +32,9 @@ def test_seeded_generators() -> None:
     run_node("--test", "tests/generators.test.js")
 
 
+def test_difficulty_tiers() -> None:
+    run_node("--test", "tests/difficulty.test.js")
+
+
 def test_static_modules() -> None:
     run_node("scripts/check.js")

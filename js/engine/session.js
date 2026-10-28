@@ -4,7 +4,13 @@ export const SESSION_MS = 45 * 60 * 1000;
 export class Session {
   constructor(
     gameIds,
-    { now, wallNow = () => Date.now(), durationMs = SESSION_MS } = {},
+    {
+      now,
+      wallNow = () => Date.now(),
+      durationMs = SESSION_MS,
+      settings,
+      difficulties,
+    } = {},
   ) {
     if (gameIds.length !== 2 || new Set(gameIds).size !== 2)
       throw new Error("Select two different games");
@@ -23,6 +29,8 @@ export class Session {
       minutesPerGame: {},
       windowUsedMs: 0,
       visibilityEvents: [],
+      ...(settings ? { settings: structuredClone(settings) } : {}),
+      ...(difficulties ? { difficulties: { ...difficulties } } : {}),
     };
     for (const id of gameIds) {
       this.data.bests[id] = 0;
@@ -39,6 +47,8 @@ export class Session {
       id = run.gameId;
     if (run.sessionId !== d.id || !d.games.includes(id))
       throw new Error("Run belongs to another session");
+    if (d.difficulties && run.difficulty !== d.difficulties[id])
+      throw new Error("Run difficulty differs from the session");
     d.runsPerGame[id]++;
     d.minutesPerGame[id] += run.durationMs / 60000;
     if (run.score > d.bests[id]) {

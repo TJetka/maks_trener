@@ -180,7 +180,7 @@ test("1,000 mystery profiles validate, generate and explain their scoring", () =
   for (let seed = 0; seed < 1000; seed++) {
     const v = randomVariant(seed);
     const g = games[v.gameId],
-      p = parameters(v.gameId, 1, {}, v.params),
+      p = parameters(v.gameId, 1, v.settings, v.params),
       i = g.generate(1, p, mulberry32(seed));
     assert.ok(
       g.check(i, v.gameId === "dzielnik" ? i.solution[0] : i.solution).correct,
@@ -203,7 +203,7 @@ test("mystery profiles remain playable across every difficulty boundary", () => 
     )) {
       const i = g.generate(
         level,
-        parameters(v.gameId, level, {}, v.params),
+        parameters(v.gameId, level, v.settings, v.params),
         mulberry32(seed + level),
       );
       assert.ok(

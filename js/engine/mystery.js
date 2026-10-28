@@ -21,7 +21,7 @@ export const KNOBS = {
   sumuj: {
     size: number(5, 8),
     min: number(1, 10),
-    max: number(10, 50),
+    max: number(2, 50),
     shapeSize: number(2, 4),
     rotations: toggle,
     operation: choice(["sum", "product"]),
@@ -46,7 +46,7 @@ export const KNOBS = {
   slupek: {
     digits: number(2, 3),
     blanks: number(1, 3),
-    operation: choice(["add", "subtract", "multiply"]),
+    operation: choice(["add", "subtract", "mixed", "multiply"]),
     resultOnly: toggle,
   },
   kwadrat: {
@@ -76,7 +76,7 @@ export function knobSchema(gameId) {
   };
 }
 /** Restrict imported/manual profiles to the generator's tested input space. */
-export function validateParams(gameId, overrides) {
+export function validateParams(gameId, overrides, settings = {}) {
   if (!games[gameId] || !overrides || typeof overrides !== "object")
     throw new Error("Unknown game");
   const schema = knobSchema(gameId),
@@ -113,7 +113,7 @@ export function validateParams(gameId, overrides) {
       throw new Error("Invalid operators");
     result[key] = value;
   }
-  const p = parameters(gameId, 1, {}, result);
+  const p = parameters(gameId, 1, settings, result);
   if (
     p.min >= p.max ||
     (gameId === "kwadrat" && p.blanks > p.size) ||
@@ -137,7 +137,8 @@ export function createVariant(
   settings = {},
   createdAt = Date.now(),
 ) {
-  const params = validateParams(gameId, overrides);
+  settings = { ...settings, difficulty: settings.difficulty ?? "intermediate" };
+  const params = validateParams(gameId, overrides, settings);
   const canonical = JSON.stringify(
     Object.fromEntries(
       Object.entries(params).sort(([a], [b]) => a.localeCompare(b)),
@@ -148,7 +149,7 @@ export function createVariant(
     id,
     gameId,
     params,
-    settings: { ...settings },
+    settings: structuredClone(settings),
     rulesText: games[gameId].rulesCard(parameters(gameId, 1, settings, params)),
     createdAt,
   };
@@ -156,76 +157,81 @@ export function createVariant(
 export function randomVariant(seed, gameId, settings = {}) {
   const rng = mulberry32(seed),
     id = gameId ?? pick(rng, Object.keys(games));
+  const expert = settings.difficulty === "expert";
   const variants = {
     dzielnik: () => ({
-      divisors: pick(rng, [
-        [2, 5, 10],
-        [3, 4, 6],
-        [3, 6, 9],
-        [4, 8],
-        [7, 9],
-      ]),
-      cells: pick(rng, [12, 16, 20, 24]),
-      find: pick(rng, [2, 3]),
-      seconds: pick(rng, [12, 15, 20]),
-      max: 199,
+      divisors: pick(
+        rng,
+        expert
+          ? [
+              [3, 4, 6],
+              [3, 6, 9],
+              [4, 8],
+              [7, 9],
+            ]
+          : [
+              [2, 5, 10],
+              [3, 5, 6],
+            ],
+      ),
+      cells: pick(rng, expert ? [24, 30] : [12, 16]),
+      find: expert ? 3 : 2,
+      seconds: pick(rng, expert ? [12, 15] : [20, 22]),
+      max: expert ? 499 : 99,
     }),
     dzialanie: () => ({
-      numberSlots: pick(rng, [2, 3, 4]),
-      prefill: pick(rng, ["none", "numbers", "operators"]),
-      operators: pick(rng, [
-        ["+", "-"],
-        ["+", "*"],
-        ["*", "/"],
-      ]),
+      numberSlots: pick(rng, expert ? [3, 4] : [2, 3]),
+      prefill: expert ? "none" : "operators",
+      operators: expert ? ["+", "-", "*", "/"] : ["+", "-"],
+      distractors: expert ? 2 : 1,
       max: 10,
     }),
     sumuj: () => ({
-      size: pick(rng, [5, 6, 7]),
-      shapeSize: pick(rng, [2, 3, 4]),
-      operation: pick(rng, ["sum", "product"]),
-      rotations: rng() < 0.5,
+      size: expert ? pick(rng, [6, 7]) : 5,
+      shapeSize: pick(rng, expert ? [3, 4] : [2, 3]),
+      operation: "sum",
+      max: pick(rng, expert ? [15, 30] : [9, 15]),
+      rotations: expert && rng() < 0.5,
     }),
     wybierz: () => ({
-      rows: pick(rng, [3, 4, 5, 6]),
-      cols: pick(rng, [2, 3, 4]),
+      rows: pick(rng, expert ? [4, 5, 6] : [3, 4]),
+      cols: expert ? 3 : 2,
+      max: expert ? 9 : 6,
       operation: pick(rng, ["sum", "product"]),
-      seconds: pick(rng, [15, 20, 25]),
+      seconds: expert ? 18 : 25,
     }),
     podziel: () => ({
-      remainder: rng() < 0.5,
-      max: pick(rng, [100, 200, 999]),
-      seconds: pick(rng, [12, 15, 20]),
+      remainder: expert,
+      max: expert ? pick(rng, [199, 499, 999]) : 100,
+      seconds: expert ? 15 : 20,
     }),
     plusminus: () => ({
-      blanks: pick(rng, [2, 3, 4]),
-      max: pick(rng, [10, 20, 30]),
-      operators: pick(rng, [
-        ["+", "-"],
-        ["+", "-", "*"],
-      ]),
+      blanks: expert ? pick(rng, [3, 4]) : 2,
+      max: pick(rng, expert ? [20, 30, 50] : [10, 20]),
+      operators: expert ? ["+", "-", "*"] : ["+", "-"],
     }),
     taknie: () => ({
-      seconds: pick(rng, [4, 7, 10]),
-      max: pick(rng, [10, 30, 100]),
+      seconds: expert ? pick(rng, [6, 7]) : 10,
+      max: pick(rng, expert ? [100, 300] : [10, 20]),
     }),
     slupek: () => ({
-      digits: 3,
-      blanks: pick(rng, [1, 2, 3]),
-      operation: pick(rng, ["add", "subtract", "multiply"]),
-      resultOnly: rng() < 0.5,
+      digits: expert ? 3 : 2,
+      blanks: pick(rng, expert ? [2, 3] : [1, 2]),
+      operation: pick(rng, expert ? ["mixed", "multiply"] : ["add", "mixed"]),
+      resultOnly: false,
     }),
     kwadrat: () => ({
-      size: pick(rng, [3, 4]),
-      blanks: pick(rng, [2, 3]),
-      max: pick(rng, [9, 20, 30]),
-      totals: pick(rng, ["both", "rows", "columns"]),
+      size: expert ? 4 : 3,
+      blanks: pick(rng, expert ? [3, 4] : [1, 2]),
+      max: pick(rng, expert ? [20, 30] : [9, 15]),
+      totals: "both",
     }),
     karuzela: () => ({
-      chainLength: pick(rng, [2, 3, 4]),
-      options: pick(rng, [4, 6, 8]),
-      timedReveal: rng() < 0.5,
-      seconds: pick(rng, [10, 15, 20]),
+      chainLength: pick(rng, expert ? [3, 4] : [2, 3]),
+      options: expert ? pick(rng, [6, 8]) : 4,
+      operators: expert ? ["+", "-", "*", "/"] : ["+", "-"],
+      timedReveal: false,
+      seconds: pick(rng, expert ? [12, 15] : [18, 20]),
     }),
   };
   return createVariant(id, variants[id](), settings);

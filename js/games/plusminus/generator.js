@@ -1,5 +1,9 @@
 import { int, pick } from "../../engine/rng.js?v=1.0.1";
-import { assignments, evaluate, expressionTokens } from "../../engine/math.js?v=1.0.1";
+import {
+  assignments,
+  evaluate,
+  expressionTokens,
+} from "../../engine/math.js?v=1.0.1";
 import { ladder, relaxed } from "../shared.js?v=1.0.1";
 import { gameRules } from "../../i18n/pl.js?v=1.0.1";
 export const difficulty = (l) =>
@@ -24,7 +28,12 @@ export function generate(level, params, rng) {
       .map((ops) => ({ ops, value: evaluate(expressionTokens(numbers, ops)) }))
       .filter((x) => x.value !== null);
     const valid = candidates.filter(
-      (x) => candidates.filter((y) => y.value === x.value).length <= 2,
+      (x) =>
+        x.value <= (p.maxTarget ?? Infinity) &&
+        (!p.requireMultiply ||
+          !p.operators.includes("*") ||
+          x.ops.includes("*")) &&
+        candidates.filter((y) => y.value === x.value).length <= 2,
     );
     if (valid.length) {
       const chosen = pick(rng, valid);

@@ -28,9 +28,11 @@ export function generate(level, params, rng) {
     if (attempt === 200) {
       relaxed("wybierz", p);
       const board = Array.from({ length: p.rows }, (_, r) =>
-        Array(p.cols).fill(r < 2 ? (p.operation === "product" ? 2 : 1) : 3),
+        Array(p.cols).fill(
+          r < (p.subsetMin ?? 2) ? (p.operation === "product" ? 2 : 1) : 5,
+        ),
       );
-      const solution = [0, 1];
+      const solution = Array.from({ length: p.subsetMin ?? 2 }, (_, j) => j);
       return {
         board,
         operation: p.operation,
@@ -44,7 +46,10 @@ export function generate(level, params, rng) {
         int(rng, 1, p.operation === "product" ? Math.min(9, p.max) : p.max),
       ),
     );
-    const solution = pick(rng, subsets(p.rows, 2, Math.min(3, p.rows)));
+    const solution = pick(
+      rng,
+      subsets(p.rows, p.subsetMin ?? 2, Math.min(p.subsetMax ?? 3, p.rows)),
+    );
     const i = {
       board,
       operation: p.operation,

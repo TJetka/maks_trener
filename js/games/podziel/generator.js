@@ -11,14 +11,11 @@ export const difficulty = (l) =>
 export function generate(level, params, rng) {
   const p = { ...difficulty(level), ...params },
     d = pick(rng, p.divisors);
-  const q = int(
-    rng,
-    1,
-    p.remainder
-      ? Math.max(1, Math.floor((p.max - d + 1) / d))
-      : Math.min(10, Math.floor(p.max / d)),
-  );
-  const r = p.remainder ? int(rng, 0, d - 1) : 0;
+  const maxQuotient = p.remainder
+    ? Math.max(1, Math.floor((p.max - d + 1) / d))
+    : Math.min(10, Math.floor(p.max / d));
+  const q = int(rng, Math.min(p.minQuotient ?? 1, maxQuotient), maxQuotient);
+  const r = p.remainder ? int(rng, p.requireRemainder ? 1 : 0, d - 1) : 0;
   return {
     n: d * q + r,
     d,
